@@ -60,6 +60,16 @@ sysup 更新系统
 clean 系统清理
 quicksave 快速存档
 
+【有趣实用的TUI软件（基于终端的用户交互程序）】
+命令：作用
+gdu：磁盘空间管理
+nmtui：网络配置工具
+impala：wifi连接工具，tab键切换，上下左右选择，回车确认（需要iwd后端）
+btop：任务管理器
+yazi：文档管理器
+fastfetch：系统信息显示工具
+
+
 【详细按键教程】
 所有的键位都可以在.config/niri目录下，以及其子目录下的binds.kdl文件中找到。
 查看.config/niri/config.kdl文件可以看到两条binds.kdl相关的inclue，我的写在dms的后面，所以我的快捷键会覆盖dms的快捷键。
