@@ -18,16 +18,22 @@ end
 function ls
 	command eza --icons $argv
 end
+
 # grub
 abbr grub 'sudo grub-mkconfig -o /boot/grub/grub.cfg'
-
 # 小黄鸭补帧 需要steam安装正版小黄鸭
 abbr lsfg 'LSFG_PROCESS="miyu"'
 # fa运行fastfetch
 abbr fa fastfetch
 abbr reboot 'systemctl reboot'
+function sl 
+	command sl | lolcat	
+end
 function 滚
 	sysup 
+end
+function raw
+	command ~/.config/scripts/random-anime-wallpaper.sh $argv
 end
 
 function 安装
@@ -37,3 +43,8 @@ end
 function 卸载
 	command yay -Rns $argv
 end 
+
+# Added by LM Studio CLI (lms)
+set -gx PATH $PATH /home/shorin/.lmstudio/bin
+# End of LM Studio CLI section
+
