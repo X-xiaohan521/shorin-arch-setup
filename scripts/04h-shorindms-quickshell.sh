@@ -96,7 +96,7 @@ exe pacman -S --noconfirm --needed $FM_PKGS1
 exe as_user "$AUR_HELPER" -S --noconfirm --needed $FM_PKGS2
 
 log "Installing terminal utilities..."
-TERM_PKGS="fuzzel wf-recorder ttf-jetbrains-maple-mono-nf-xx-xx eza zoxide starship jq fish libnotify timg imv cava imagemagick wl-clipboard cliphist shorin-contrib-git"
+TERM_PKGS="xdg-terminal-exec fuzzel wf-recorder ttf-jetbrains-maple-mono-nf-xx-xx eza zoxide starship jq fish libnotify timg imv cava imagemagick wl-clipboard cliphist shorin-contrib-git"
 
 echo "$TERM_PKGS" >> "$VERIFY_LIST"
 exe as_user "$AUR_HELPER" -S --noconfirm --needed $TERM_PKGS
@@ -105,7 +105,16 @@ exe as_user "$AUR_HELPER" -S --noconfirm --needed $TERM_PKGS
 as_user shorin link
 
 log "Configuring default terminal and templates..."
-ln -sf /usr/bin/kitty /usr/bin/gnome-terminal
+# 默认终端处理
+if grep -q "kitty" "$HOME_DIR/.config/xdg-terminals.list"; then
+echo 'kitty.desktop' >> "$HOME_DIR/.config/xdg-terminals.list"
+fi
+
+# if [ ! -f /usr/local/bin/gnome-terminal ] || [ -L /usr/local/bin/gnome-terminal ]; then
+#   exe ln -sf /usr/bin/kitty /usr/local/bin/gnome-terminal
+# fi
+sudo -u "$TARGET_USER" gsettings set com.github.stunkymonkey.nautilus-open-any-terminal terminal kitty
+
 as_user mkdir -p "$HOME_DIR/Templates"
 as_user touch "$HOME_DIR/Templates/new" "$HOME_DIR/Templates/new.sh"
 as_user bash -c "echo '#!/usr/bin/env bash' >> '$HOME_DIR/Templates/new.sh'"

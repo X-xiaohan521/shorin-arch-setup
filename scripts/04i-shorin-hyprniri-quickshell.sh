@@ -109,7 +109,7 @@ echo "$TERM_PKGS" >> "$VERIFY_LIST"
 exe as_user "$AUR_HELPER" -S --noconfirm --needed $TERM_PKGS
 
 log "Installing file manager and dependencies..."
-FM_PKGS="xdg-desktop-portal-gtk thunar tumbler ffmpegthumbnailer poppler-glib gvfs-smb file-roller thunar-archive-plugin gnome-keyring thunar-volman gvfs-mtp gvfs-gphoto2 webp-pixbuf-loader"
+FM_PKGS="xdg-terminal-exec xdg-desktop-portal-gtk thunar tumbler ffmpegthumbnailer poppler-glib gvfs-smb file-roller thunar-archive-plugin gnome-keyring thunar-volman gvfs-mtp gvfs-gphoto2 webp-pixbuf-loader"
 echo "$FM_PKGS" >> "$VERIFY_LIST"
 exe as_user "$AUR_HELPER" -S --noconfirm --needed $FM_PKGS
 
@@ -122,7 +122,16 @@ exe as_user "$AUR_HELPER" -S --noconfirm --needed $SCREEN_PKGS
 section "Shorin Hyprniri" "Environment Configuration"
 
 log "Configuring default terminal and templates..."
-exe ln -sf /usr/bin/kitty /usr/bin/gnome-terminal
+# 默认终端处理
+if grep -q "kitty" "$HOME_DIR/.config/xdg-terminals.list"; then
+echo 'kitty.desktop' >> "$HOME_DIR/.config/xdg-terminals.list"
+fi
+
+# if [ ! -f /usr/local/bin/gnome-terminal ] || [ -L /usr/local/bin/gnome-terminal ]; then
+#   exe ln -sf /usr/bin/kitty /usr/local/bin/gnome-terminal
+# fi
+sudo -u "$TARGET_USER" gsettings set com.github.stunkymonkey.nautilus-open-any-terminal terminal kitty
+
 
 as_user mkdir -p "$HOME_DIR/Templates"
 as_user touch "$HOME_DIR/Templates/new" "$HOME_DIR/Templates/new.sh"

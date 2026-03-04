@@ -268,12 +268,19 @@ section "Config" "file manager"
 
 if [[ "$DMS_NIRI_INSTALLED" == "true" ]]; then
     log "DMS niri detected, configuring nautilus"
-    FM_PKGS="ffmpegthumbnailer gvfs-smb nautilus-open-any-terminal file-roller gnome-keyring gst-plugins-base gst-plugins-good gst-libav nautilus"
+    FM_PKGS="ffmpegthumbnailer gvfs-smb nautilus-open-any-terminal  xdg-terminal-exec file-roller gnome-keyring gst-plugins-base gst-plugins-good gst-libav nautilus"
     echo "$FM_PKGS" >> "$VERIFY_LIST"
-    exe pacman -S --noconfirm --needed $FM_PKGS    
-    if pacman -Q | grep -q "kitty" && [[ ! -f /usr/bin/gnome-terminal || -L /usr/bin/gnome-terminal ]]; then
-        ln -sf /usr/bin/kitty /usr/bin/gnome-terminal
+    exe as_user paru -S --noconfirm --needed $FM_PKGS    
+    # 默认终端处理
+    if grep -q "kitty" "$HOME_DIR/.config/xdg-terminals.list"; then
+    echo 'kitty.desktop' >> "$HOME_DIR/.config/xdg-terminals.list"
     fi
+
+    # if [ ! -f /usr/local/bin/gnome-terminal ] || [ -L /usr/local/bin/gnome-terminal ]; then
+    #   exe ln -sf /usr/bin/kitty /usr/local/bin/gnome-terminal
+    # fi
+    sudo -u "$TARGET_USER" gsettings set com.github.stunkymonkey.nautilus-open-any-terminal terminal kitty
+
     as_user mkdir -p "$HOME_DIR/Templates"
     as_user touch "$HOME_DIR/Templates/new"
     as_user touch "$HOME_DIR/Templates/new.sh"
@@ -281,6 +288,7 @@ if [[ "$DMS_NIRI_INSTALLED" == "true" ]]; then
     chown -R "$TARGET_USER:" "$HOME_DIR/Templates"
     
     configure_nautilus_user
+
 
 elif [[ "$DMS_HYPR_INSTALLED" == "true" ]]; then
     log "DMS hyprland detected, skipping file manager."
