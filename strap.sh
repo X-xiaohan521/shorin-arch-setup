@@ -68,4 +68,4 @@ fi
 cd "$TARGET_DIR"
 printf "Starting installer...\n"
 # 直接调用 sudo bash 执行核心安装逻辑
-sudo bash install.sh
+sudo bash install.sh < /dev/tty
