@@ -13,6 +13,21 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# --- [默认参数] ---
+OFFLINE_MODE=false
+
+# --- [解析命令行参数] ---
+for arg in "$@"; do
+    case "$arg" in
+        -o|--offline)
+            OFFLINE_MODE=true
+            shift
+            ;;
+        *)
+            ;;
+    esac
+done
+
 # --- [环境检测] ---
 
 # 1. 检查是否为 Linux 内核
@@ -38,30 +53,55 @@ REPO_URL="https://github.com/SHORiN-KiWATA/shorin-arch-setup.git"
 # 强制将引导目录设定在内存盘 /tmp 下，安全、极速、无残留
 TARGET_DIR="/tmp/shorin-arch-setup"
 
-printf "%b>>> Preparing to install from branch: %s on %s%b\n" "$BLUE" "$TARGET_BRANCH" "$ARCH_NAME" "$NC"
+# --- [打印开始信息] ---
+if [ "$OFFLINE_MODE" = false ]; then
+    printf "%b>>> Preparing to install from remote branch: %s on %s%b\n" "$BLUE" "$TARGET_BRANCH" "$ARCH_NAME" "$NC"
+else
+    printf "%b>>> Offline mode: preparing to install from local repository."
 
 # --- [执行流程] ---
 
-# 1. 检查并安装 git
-if ! command -v git >/dev/null 2>&1; then
-    printf "Git not found. Installing...\n"
-    sudo pacman -Syu --noconfirm git
+# 1. 如果不是离线模式，检查 git
+if [ "$OFFLINE_MODE" = false ]; then
+    if ! command -v git >/dev/null 2>&1; then
+        printf "Git not found. Installing...\n"
+        sudo pacman -Syu --noconfirm git
+    fi
 fi
 
-# 2. 清理旧目录 (使用绝对路径，指哪打哪)
+# 2. 清理旧目录
 if [ -d "$TARGET_DIR" ]; then
     printf "Removing existing directory '%s'...\n" "$TARGET_DIR"
     sudo rm -rf "$TARGET_DIR"
 fi
 
-# 3. 克隆指定分支 (显式传递 TARGET_DIR)
-printf "Cloning repository to %s...\n" "$TARGET_DIR"
-if git clone --depth 1 -b "$TARGET_BRANCH" "$REPO_URL" "$TARGET_DIR"; then
-    sudo chmod 755 "$TARGET_DIR"
-    printf "%bClone successful.%b\n" "$GREEN" "$NC"
+# 3. 获取安装脚本
+if [ "$OFFLINE_MODE" = true ]; then
+
+    printf "%bOffline mode enabled. Copying local repository...%b\n" "$BLUE" "$NC"
+
+    if cp -r . "$TARGET_DIR" --exclude=.git; then
+        sudo chmod 755 "$TARGET_DIR"
+        printf "%bCopy successful.%b\n" "$GREEN" "$NC"
+    else
+        printf "%bError: Failed to copy the scripts to '%s'.%b\n" "$RED" "$TARGET_DIR" "$NC"
+        exit 1
+    fi
+
 else
-    printf "%bError: Failed to clone branch '%s'. Check if it exists.%b\n" "$RED" "$TARGET_BRANCH" "$NC"
-    exit 1
+
+    printf "Cloning repository to %s...\n" "$TARGET_DIR"
+
+    if git clone --depth 1 -b "$TARGET_BRANCH" "$REPO_URL" "$TARGET_DIR"; then
+        sudo chmod 755 "$TARGET_DIR"
+        printf "%bClone successful.%b\n" "$GREEN" "$NC"
+
+    else
+        printf "%bError: Failed to clone branch '%s'.%b\n" "$RED" "$TARGET_BRANCH" "$NC"
+        printf "%bTip: If you are offline, run the installer with:%b\n" "$BLUE" "$NC"
+        printf "    ./strap.sh --offline\n"
+        exit 1
+    fi
 fi
 
 # 4. 运行安装
